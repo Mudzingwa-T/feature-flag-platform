@@ -1,0 +1,71 @@
+// Prisma schema for the Feature Flag & Configuration Platform
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  VIEWER
+}
+
+enum Strategy {
+  BOOLEAN
+  PERCENTAGE_ROLLOUT
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      Role     @default(VIEWER)
+  createdAt DateTime @default(now())
+}
+
+model Environment {
+  id    String @id @default(uuid())
+  key   String @unique // e.g. DEV, PROD
+  name  String
+  flags Flag[]
+}
+
+model Flag {
+  id                String      @id @default(uuid())
+  key               String
+  description       String?
+  enabled           Boolean     @default(false)
+  strategy          Strategy    @default(BOOLEAN)
+  rolloutPercentage Int         @default(0) // 0..100, used by PERCENTAGE_ROLLOUT
+  // Optional targeting constraints, e.g. { "includeCities": ["Harare"], "excludeInternal": true }
+  constraints       Json?
+  // Optimistic-concurrency guard. Every successful write increments this.
+  version           Int         @default(1)
+  updatedBy         String?
+  environmentId     String
+  environment       Environment @relation(fields: [environmentId], references: [id], onDelete: Cascade)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  // A flag key is unique within an environment (same key can exist in DEV and PROD).
+  @@unique([key, environmentId])
+  @@index([environmentId])
+}
+
+// Append-only audit trail. Rows are never updated or deleted.
+model AuditLog {
+  id             String   @id @default(uuid())
+  actor          String
+  action         String // CREATE | UPDATE | DELETE
+  flagKey        String
+  environmentKey String
+  previousValue  Json?
+  newValue       Json?
+  createdAt      DateTime @default(now())
+
+  @@index([flagKey])
+  @@index([createdAt])
+}
