@@ -23,4 +23,6 @@ RUN npm run build \
 EXPOSE 3001
 
 # Apply migrations, seed demo data (idempotent upserts), then start the API.
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist-seed/seed.js && node dist/main.js"]
+# The compiled entrypoint is dist/main.js; we fall back to dist/src/main.js so the
+# container starts regardless of how the TypeScript output tree is laid out.
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist-seed/seed.js && node $(test -f dist/main.js && echo dist/main.js || echo dist/src/main.js)"]
