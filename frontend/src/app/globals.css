@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: light; }
+html, body { height: 100%; }
+body {
+  @apply bg-paper text-ink antialiased;
+}
+
+/* Quality floor: visible keyboard focus everywhere, reduced motion respected. */
+:focus-visible {
+  outline: 2px solid theme('colors.brand.DEFAULT');
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium
+           transition-colors disabled:opacity-50 disabled:cursor-not-allowed select-none;
+  }
+  .btn-primary { @apply btn bg-brand text-white hover:bg-brand-ink; }
+  .btn-secondary { @apply btn border border-line bg-surface text-ink hover:bg-paper; }
+  .btn-ghost { @apply btn text-muted hover:text-ink hover:bg-paper; }
+  .btn-danger { @apply btn border border-danger/30 text-danger hover:bg-danger/5; }
+
+  .input {
+    @apply w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink
+           placeholder:text-muted/60 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15;
+  }
+  .label { @apply block text-xs font-medium uppercase tracking-wide text-muted mb-1.5; }
+  .card { @apply rounded-xl border border-line bg-surface shadow-card; }
+  .mono { @apply font-mono; }
+  .kbd { @apply font-mono text-[13px] rounded-md bg-paper border border-line px-1.5 py-0.5; }
+}
